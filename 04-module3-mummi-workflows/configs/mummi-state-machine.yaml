@@ -1,0 +1,162 @@
+apiVersion: state-machine.converged-computing.org/v1alpha1
+kind: StateMachine
+metadata:
+  name: mummi
+spec:
+  manager:
+    interactive: false
+    image: ghcr.io/converged-computing/state-machine-operator:manager-arm
+    pullPolicy: Always
+
+  workflow:
+    completed: 2
+    prefix: "structure_"
+
+  cluster:
+    maxSize: 2
+
+  jobs:
+  - name: mlrunner
+    arch: arm64
+    config:
+      nodes: 1
+      command: "/root/.cargo/bin/pixi run --manifest-path /pixi-env/pixi.toml bash /workdir/entrypoint.sh"
+
+    image: ghcr.io/converged-computing/sc25-flux-eks:mlrunner-state-machine-arm
+    script: |
+      mummi_mlserver_nnodes=1
+      MUMMI_APP=/opt/clones/mummi-ras
+      export MUMMI_ROOT=$MUMMI_APP
+      export MUMMI_RESOURCES=/opt/clones/mummi_resources
+      export MUMMI_APP
+      model="/opt/clones/mummi_resources/ml/chonky-model/CG_pos_data_summary_pos_dis_C1_v1.npz"
+      ws=/opt/clones/mummi-ras/mlserver
+      # Shared output for validator, sampler, and generator
+      mldir=/opt/clones/mummi-ras/mlserver
+      resources="martini3-validator"
+      complex="ras-rbdcrd-ref-CG.gro"
+      cmd="mummi-ml start --jobid {{jobid}} --workspace=${ws} --outdir=${outpath} --tag mlrunner --device gpu --plain-http --registry=${registry} --encoder-model ${model} --ml-outdir=${mldir} --feedback --resources ${resources} --complex=${complex}"
+      mkdir -p /opt/clones/extract
+      cd /opt/clones/extract
+      tar -xzvf /opt/clones/model.tar.gz
+      extracted=$(ls /opt/clones/extract)
+      cd -
+      mv /opt/clones/extract/${extracted} /opt/clones/mummi_resources/ml/chonky-model
+      NUM_THREADS=$(nproc)
+      export OMP_NUM_THREADS=$NUM_THREADS
+      export KERAS_BACKEND='theano'
+      umask 007
+      python $MUMMI_APP/mummi_ras/scripts/create_organization.py
+      # Trajectory feedback files
+      here=$(pwd)
+      feedback=/opt/clones/mummi-ras/feedback-cg2ml
+      mkdir -p ${feedback}
+      # These are named by date, but we are just getting all of them.
+      for tag in $(oras repo tags --plain-http $registry/cganalysis)
+        do
+           mkdir -p ${feedback}/${tag}
+           cd ${feedback}/${tag}
+           oras pull --plain-http $registry/cganalysis:$tag
+      done
+      cd $here
+      echo "$cmd"
+      $cmd
+
+  - name: createsim
+    arch: arm64
+    config:
+      nodes: 1
+      walltime: '0:45:00'
+      # This goes into the pod resource spec, so we ask for 62/64
+      coresPerTask: 62
+
+    image: ghcr.io/converged-computing/sc25-flux-eks:createsims-state-machine-arm
+    registry:
+      pull: mlrunner
+      push: createsim
+    script: |
+      . ~/.bash_profile
+      MUMMI_APP=/opt/clones/mummi-ras MUMMI_ROOT=$MUMMI_APP
+      MUMMI_RESOURCES=/opt/clones/mummi_resources
+      export MUMMI_ROOT MUMMI_APP MUMMI_RESOURCES
+      export OMP_NUM_THREADS=$(nproc)
+      splitup=(${jobid//_/ })
+      simdir=$(echo ${splitup[1]})
+      simname=${jobid}
+      locpath=/tmp/workdir
+      mv /tmp/out ${locpath}
+      mkdir -p ${outpath}; cd ${locpath}
+      mkdir ${simdir}
+      cp *.gro ${simdir}/${jobid}.gro
+      mummi_createsim \
+        --fstype simple \
+        --patch ${jobid} \
+        --inpath $(pwd) \
+        --outpath $outpath \
+        --outlocal $locpath \
+        --logpath $locpath \
+        --loglevel 2 \
+        --gromacs gmx \
+        --mpi "gmx mdrun" \
+        --mini \
+        --mdrunopt " -ntmpi 1 -ntomp $OMP_NUM_THREADS -pin off"
+
+  - name: cganalysis
+    arch: arm64
+    config:
+      nodes: 1
+      walltime: '0:45:00'
+      coresPerTask: 62
+
+    image: ghcr.io/converged-computing/sc25-flux-eks:cganalysis-state-machine-arm
+    registry:
+      pull: createsim
+      push: cganalysis
+    script: |
+      . ~/.bash_profile
+      MUMMI_APP=/opt/clones/mummi-ras MUMMI_ROOT=$MUMMI_APP
+      MUMMI_RESOURCES=/opt/clones/mummi_resources
+      export MUMMI_ROOT MUMMI_APP MUMMI_RESOURCES
+      export OMPI_COMM_WORLD_RANK=1
+      export OMP_NUM_THREADS=$(nproc)
+      simname=${jobid}
+      locpath=/tmp/workdir
+      mv /tmp/out ${locpath}
+      mkdir -p ${outpath}; cd ${locpath} 
+      ls
+      cframe=0
+      echo ">> xtclast = $xtclast, cframe = $cframe"
+      mummi_cganalysis \
+        --simname ${jobid} \
+        --path $locpath \
+        --pathremote $outpath \
+        --siminputs $outpath \
+        --fstype mummi \
+        --fbio mummi \
+        --simbin gmx \
+        --backend GROMACS \
+        --simcores ${OMP_NUM_THREADS} \
+        --nprocs 1 \
+        --stopsimtime 100 \
+        --frameProcessBatchSize 10 \
+        --simruntime 0.1 \
+        --logstdout \
+        --loglevel 2 \
+        --mini \
+        --no-gpu \
+        --fcount $cframe
+      echo $?
+      # Trajectory feedback file
+      retval=$?
+      if [[ "$retval" == "0" ]]; then
+          echo "Successful run found. Pushing feedback"
+          for directory in $(ls /opt/clones/mummi-ras/feedback-cg2ml)
+            do
+             cd /opt/clones/mummi-ras/feedback-cg2ml/${directory}
+            timestamp=$(date "+%Y-%m-%d_%H-%M-%S")
+            oras push --plain-http $registry/cganalysis:feedback-$timestamp .
+          done
+      else
+          echo "Simulation was not successful."
+          exit $retval    
+      fi

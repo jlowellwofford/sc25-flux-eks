@@ -1,0 +1,51 @@
+apiVersion: state-machine.converged-computing.org/v1alpha1
+kind: StateMachine
+metadata:
+  name: state-machine
+spec:
+  manager:
+    pullPolicy: Always
+    image: ghcr.io/converged-computing/state-machine-operator:manager-arm
+  workflow:
+    completed: 4
+    events:
+      # Two studies:
+      # If lammps runtime is > 30 add a node (do with autoscaler)
+      # what is the base case
+      - metric: mean.lammps.duration
+        when: ">= 30"
+        action: grow
+        repetitions: 2
+        # Require checks between before doing again
+        # TODO check if this is working correctly.
+        # also check the .get()
+        backoff: 3
+        maxSize: 5
+
+  cluster:
+    maxSize: 2
+
+  jobs:
+  - name: job_a
+    config:
+      nodes: 1
+      coresPerTask: 1
+    image: rockylinux:9
+    script: echo This is a setup for lammps
+
+  - name: lammps
+    properties:
+      minicluster: "yes"
+      flux: '{"container": {"image": "ghcr.io/converged-computing/flux-view-rocky:arm-9"}}'
+    config:
+      nodes: 2
+    image: ghcr.io/rse-ops/lammps-matrix:openmpi-ubuntu-22.04-arm64
+    workdir: /opt/lammps/examples/reaxff/HNS/
+    script: flux run -N $nodes lmp -v x 4 -v y 4 -v z 4 -in ./in.reaxc.hns -nocite
+
+  - name: job_c
+    config:
+      nodes: 1
+      coresPerTask: 1
+    image: rockylinux:9
+    script: echo This is the third

@@ -1,0 +1,44 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: lammps-job
+spec:
+  # Without pod limits and resources, these can run multiple per physical nodes
+  # The size is the number of nodes, and tasks here is proc per node * nodes
+  size: 2
+  tasks: 128
+  
+  # If quiet is false, we see all flux logging
+  # For experiments, this is useful to set to true.
+  logging:
+    quiet: false
+
+  # The view should match the architecture of the application image.
+  # You aren't required to use a view for Flux 
+  # You can also install to your application container
+  flux:
+    optionFlags: -o cpu-affinity=per-task
+    container: 
+      image: ghcr.io/converged-computing/flux-view-rocky:arm-9
+      
+  # This container is built for AWS EFA with libfabric
+  containers:
+    # This was built on hpc7g
+   - image: ghcr.io/converged-computing/lammps-reax-efa:ubuntu2404-efa
+
+     # You can set the working directory if your container WORKDIR is not correct.
+     workingDir: /opt/lammps/examples/reaxff/HNS
+     command: lmp -v x 8 -v y 8 -v z 8 -in in.reaxff.hns -nocite
+
+     # This is more expert optimization to ensure /dev/shm does not limit efa
+     volumes:
+        shared-memory:
+          emptyDir: true
+          emptyDirMedium: "memory"
+
+     # Ensure we get a single EFA device
+     resources:
+       limits:
+         vpc.amazonaws.com/efa: 1
+       requests:
+         vpc.amazonaws.com/efa: 1
