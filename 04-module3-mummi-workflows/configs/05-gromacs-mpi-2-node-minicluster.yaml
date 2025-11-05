@@ -13,7 +13,7 @@ spec:
     optionFlags: "-o cpu-affinity=per-task"
   containers:
    - image: ghcr.io/converged-computing/sc25-flux-eks:gromacs-mpi-arm
-     command: gmx_mpi mdrun -rcon 0.4 -cpi -pin off -maxh 0.05 -ntomp 1 -ddcheck
+     command: gmx_mpi mdrun -rcon 0.4 -rdd 2.0 -cpi -pin off -maxh 0.05 -ntomp 1 -ddcheck
      imagePullPolicy: Always
      workingDir: /opt/gromacs/structure_iter00_000000000353_YYNN-0
      volumes:
