@@ -1,0 +1,29 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: gromacs-mpi
+spec:
+  size: 1
+  tasks: 64
+  logging:
+    quiet: true
+  flux:
+    container: 
+      image: ghcr.io/converged-computing/flux-view-rocky:arm-9
+    optionFlags: "-o cpu-affinity=per-task"
+  containers:
+   - image: ghcr.io/converged-computing/sc25-flux-eks:gromacs-mpi-arm
+     command: gmx_mpi mdrun -rcon 0.4 -rdd 2.0 -cpi -pin off -maxh 0.05 -ntomp 1 -ddcheck
+     imagePullPolicy: Always
+     workingDir: /opt/gromacs/structure_iter00_000000000353_YYNN-0
+     volumes:
+        shared-memory:
+          emptyDir: true
+          emptyDirMedium: "memory"
+
+     # Ensure we get a single EFA device
+     resources:
+       limits:
+         vpc.amazonaws.com/efa: 1
+       requests:
+         vpc.amazonaws.com/efa: 1

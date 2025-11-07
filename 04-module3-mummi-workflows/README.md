@@ -12,15 +12,11 @@ This module focuses on deploying MuMMI (Multiscale Machine-learned Modeling Infr
 
 - [The MLRunner component](#the-mlrunner-component)
 - [Simulation steps](#simulation-steps)
+- [MuMMI with MPI](#mummi-with-mpi)
 
-### 2. MuMMI Orchestrated
+### 2. MuMMI Advanced
 
 - [MuMMI as a State Machine](#mummi-as-a-state-machine)
-
-### 3. Advanced Topics
-- Hackathon challenges
-- Performance optimization
-- Scaling considerations
 
 ## Prerequisites
 
@@ -3032,6 +3028,124 @@ kubectl delete -f ./configs/03-cganalysis-minicluster.yaml
 </details>
 
 Createsims runs for approximately 10 minutes, however it depends on the simulation data you get from the mlrunner. Cganalysis for experiments we ran, we capped to 30 minutes, and the build here is capped to approximately 6 minutes. You can use `kubectl logs <pod>` to equivalently see the output, which will include timings.
+
+### MuMMI with MPI
+
+How can the Flux Operator (and Flux, generally) improve running a MuMMI component? We can run gromacs (the underlying unit of cganalysis and createsims) on two nodes to improve performance. Let's test that next. First, let's run gromacs on one node.
+
+```bash
+kubectl apply -f configs/05-gromacs-mpi-1-node-minicluster.yaml
+kubectl logs gromacs-mpi-0-wc4mz -f
+```
+
+This will run for about 3 minutes. To make it longer (6 minutes) you can change the command as follows:
+
+```diff
+- gmx_mpi mdrun -rcon 0.4 -cpi -pin off -maxh 0.05 -ntomp 1 -ddcheck
++ gmx_mpi mdrun -rcon 0.4 -cpi -pin off -maxh 0.1 -ntomp 1 -ddcheck
+```
+
+The Figure of Merit is the simulation ns/day. For one node with MPI, we get `731.930 ns/day`:
+
+```console
+                      :-) GROMACS - gmx mdrun, 2024.2 (-:
+
+Executable:   /usr/bin/gmx_mpi
+Data prefix:  /usr
+Working dir:  /opt/gromacs/structure_iter00_000000000353_YYNN-0
+Command line:
+  gmx_mpi mdrun -rcon 0.4 -cpi -pin off -maxh 0.05 -ntomp 1 -ddcheck
+
+Reading file topol.tpr, VERSION 2024.1-spack (single precision)
+Can not increase nstlist because verlet-buffer-tolerance is not set or used
+Update groups can not be used for this system because an incompatible virtual site type is used
+
+Using 64 MPI processes
+Using 1 OpenMP thread per MPI process
+
+starting mdrun 'lipids-sim'
+-1 steps, infinite ps.
+
+Step 75520: Run time exceeded 0.050 hours, will terminate the run within 40 steps
+
+
+Dynamic load balancing report:
+ DLB got disabled because it was unsuitable to use.
+ Average load imbalance: 3.5%.
+ The balanceable part of the MD step is 61%, load imbalance is computed from this.
+ Part of the total run time spent waiting due to load imbalance: 2.1%.
+
+
+NOTE: 18 % of the run time was spent in domain decomposition,
+      5 % of the run time was spent in pair search,
+      you might want to increase nstlist (this has no effect on accuracy)
+
+               Core t (s)   Wall t (s)        (%)
+       Time:    11413.965      178.343     6400.0
+                 (ns/day)    (hour/ns)
+Performance:      731.930        0.033
+
+GROMACS reminds you: "You should call it 'entropy'. No one knows what entropy really is, so in a debate you will always have the advantage." (John von Neumann to Claude Shannon, on why he should borrow the term for information theory)
+```
+
+Now let's increase to 2 nodes and see the benefit of scaling out.
+
+```bash
+kubectl apply -f configs/05-gromacs-mpi-2-node-minicluster.yaml
+kubectl logs gromacs-mpi-0-wc4mz -f
+```
+
+This will also run for about 3 minutes. To make it longer (6 minutes) change the command as follows:
+
+```diff
+- gmx_mpi mdrun -rcon 0.4 -cpi -pin off -maxh 0.05 -ntomp 1 -ddcheck
++ gmx_mpi mdrun -rcon 0.4 -cpi -pin off -maxh 0.1 -ntomp 1 -ddcheck
+```
+
+The Figure of Merit is the simulation ns/day. For two nodes with MPI, we get the following:
+
+```console
+                      :-) GROMACS - gmx mdrun, 2024.2 (-:
+
+Executable:   /usr/bin/gmx_mpi
+Data prefix:  /usr
+Working dir:  /opt/gromacs/structure_iter00_000000000353_YYNN-0
+Command line:
+  gmx_mpi mdrun -rcon 0.4 -cpi -pin off -maxh 0.05 -ntomp 1 -ddcheck
+
+Reading file topol.tpr, VERSION 2024.1-spack (single precision)
+Can not increase nstlist because verlet-buffer-tolerance is not set or used
+Update groups can not be used for this system because an incompatible virtual site type is used
+
+Using 128 MPI processes
+Using 1 OpenMP thread per MPI process
+
+starting mdrun 'lipids-sim'
+-1 steps, infinite ps.
+
+Step 107920: Run time exceeded 0.050 hours, will terminate the run within 40 steps
+
+
+Dynamic load balancing report:
+ DLB got disabled because it was unsuitable to use.
+ Average load imbalance: 7.0%.
+ The balanceable part of the MD step is 51%, load imbalance is computed from this.
+ Part of the total run time spent waiting due to load imbalance: 3.6%.
+
+
+NOTE: 16 % of the run time was spent in domain decomposition,
+      4 % of the run time was spent in pair search,
+      you might want to increase nstlist (this has no effect on accuracy)
+
+               Core t (s)   Wall t (s)        (%)
+       Time:    22827.047      178.337    12800.0
+                 (ns/day)    (hour/ns)
+Performance:     1045.899        0.023
+
+GROMACS reminds you: "The three principal virtues of a programmer are Laziness, Impatience, and Hubris" (Larry Wall)
+```
+Note that the ns/day improves by approximately 1.43x.
+
 
 ### An example state machine
 
