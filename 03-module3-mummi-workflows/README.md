@@ -3088,6 +3088,12 @@ Performance:      731.930        0.033
 GROMACS reminds you: "You should call it 'entropy'. No one knows what entropy really is, so in a debate you will always have the advantage." (John von Neumann to Claude Shannon, on why he should borrow the term for information theory)
 ```
 
+When you are done:
+
+```bash
+kubectl delete -f configs/05-gromacs-mpi-1-node-minicluster.yaml
+```
+
 Now let's increase to 2 nodes and see the benefit of scaling out.
 
 ```bash
@@ -3238,27 +3244,16 @@ registry-0                              1/1     Running     0          3m31s
 state-machine-manager-d95d6b564-5bhpl   1/1     Running     0          3m31s
 ```
 
-You can look at the manager to see final metadata, streaming ML models, and timings. The state machine operator also can save instance create and deletion times if you have an autoscaling cluster.
-
-```bash
-=== nodes
-{"ip-192-168-165-127.ec2.internal": {"created": 1761439989.0, "labels": {"alpha.eksctl.io/cluster-name": "workshop-cluster", "alpha.eksctl.io/nodegroup-name": "workers", "beta.kubernetes.io/arch": "arm64", "beta.kubernetes.io/instance-type": "c7g.16xlarge", "beta.kubernetes.io/os": "linux", "eks.amazonaws.com/capacityType": "ON_DEMAND", "eks.amazonaws.com/nodegroup": "workers", "eks.amazonaws.com/nodegroup-image": "ami-0aca0be8623bc1c5a", "eks.amazonaws.com/sourceLaunchTemplateId": "lt-053fc85be5faaf528", "eks.amazonaws.com/sourceLaunchTemplateVersion": "1", "failure-domain.beta.kubernetes.io/region": "us-east-1", "failure-domain.beta.kubernetes.io/zone": "us-east-1f", "k8s.io/cloud-provider-aws": "2f2ee85f143259e3d400b7a9642f0aef", "kubernetes.io/arch": "arm64", "kubernetes.io/hostname": "ip-192-168-165-127.ec2.internal", "kubernetes.io/os": "linux", "node.kubernetes.io/instance-type": "c7g.16xlarge", "role": "workshop", "topology.k8s.aws/zone-id": "use1-az5", "topology.kubernetes.io/region": "us-east-1", "topology.kubernetes.io/zone": "us-east-1f"}, "conditions": [{"last_transition_time": 1761439999.0, "message": "kubelet is posting ready status", "reason": "KubeletReady", "status": true, "type": "Ready", "recorded_at": 1761459942.550991}], "is_ready": true}, "ip-192-168-174-203.ec2.internal": {"created": 1761443342.0, "labels": {"alpha.eksctl.io/cluster-name": "workshop-cluster", "alpha.eksctl.io/nodegroup-name": "workers", "beta.kubernetes.io/arch": "arm64", "beta.kubernetes.io/instance-type": "c7g.16xlarge", "beta.kubernetes.io/os": "linux", "eks.amazonaws.com/capacityType": "ON_DEMAND", "eks.amazonaws.com/nodegroup": "workers", "eks.amazonaws.com/nodegroup-image": "ami-0aca0be8623bc1c5a", "eks.amazonaws.com/sourceLaunchTemplateId": "lt-053fc85be5faaf528", "eks.amazonaws.com/sourceLaunchTemplateVersion": "1", "failure-domain.beta.kubernetes.io/region": "us-east-1", "failure-domain.beta.kubernetes.io/zone": "us-east-1f", "k8s.io/cloud-provider-aws": "2f2ee85f143259e3d400b7a9642f0aef", "kubernetes.io/arch": "arm64", "kubernetes.io/hostname": "ip-192-168-174-203.ec2.internal", "kubernetes.io/os": "linux", "node.kubernetes.io/instance-type": "c7g.16xlarge", "role": "workshop", "topology.k8s.aws/zone-id": "use1-az5", "topology.kubernetes.io/region": "us-east-1", "topology.kubernetes.io/zone": "us-east-1f"}, "conditions": [{"last_transition_time": 1761443353.0, "message": "kubelet is posting ready status", "reason": "KubeletReady", "status": true, "type": "Ready", "recorded_at": 1761459942.551099}], "is_ready": true}}
-===
-=== times
-{"times": {"list_jobs_by_status": [0.019, 0.014, 0.015, 0.014, 0.018, 0.019, 0.047, 0.026, 0.029, 0.02, 0.1, 0.039, 0.023, 0.069, 0.022, 0.021, 0.025, 0.025, 0.098, 0.099, 0.026, 0.023, 0.027, 0.027, 0.024, 0.028, 0.026, 0.026, 0.026, 0.026, 0.029, 0.027, 0.027, 0.028, 0.027, 0.027, 0.027, 0.028, 0.034, 0.067, 0.034, 0.046, 0.042, 0.042, 0.1, 0.037, 0.041, 0.035, 0.034, 0.033, 0.039, 0.099, 0.034, 0.041, 0.101, 0.059, 0.085, 0.035, 0.035, 0.046, 0.037, 0.06, 0.036, 0.049, 0.039, 0.037]}, "timestamps": {"workflow_start": 1761459942.3353758, "job_074261618_job_a_start": 1761459942.553824, "job_074261618_job_a_succeeded": 1761459942.5689287, "job_098019854_job_a_start": 1761459942.660852, "job_098019854_job_a_succeeded": 1761459942.6732793, "job_074261618_lammps_start": 1761459942.8059447, "job_098019854_lammps_start": 1761459942.868041, "job_098019854_lammps_succeeded": 1761460042.5691803, "job_074261618_lammps_succeeded": 1761460042.7386138, "job_098019854_job_c_start": 1761460042.9233775, "job_074261618_job_c_start": 1761460043.0517025, "job_074261618_job_c_succeeded": 1761460046.6158402, "job_098019854_job_c_succeeded": 1761460046.6952543, "job_060932910_job_a_start": 1761460046.7517958, "job_088170049_job_a_start": 1761460046.8089633, "job_060932910_job_a_succeeded": 1761460049.6113164, "job_088170049_job_a_succeeded": 1761460049.862579, "job_060932910_lammps_start": 1761460050.0128307, "job_088170049_lammps_start": 1761460050.1613925, "job_088170049_lammps_succeeded": 1761460142.6584404, "job_088170049_job_c_start": 1761460142.791601, "job_060932910_lammps_succeeded": 1761460144.708862, "job_060932910_job_c_start": 1761460144.917971, "job_088170049_job_c_succeeded": 1761460146.8353949, "job_060932910_job_c_succeeded": 1761460147.9210725, "workflow_complete": 1761460147.957905}}
-===
-🌊 Streaming ML Model Summary: {"variance": {"job_a": {"duration": 0.0}, "lammps": {"duration": 12.667}, "job_c": {"duration": 0.25}}, "mean": {"job_a": {"duration": 3.0}, "lammps": {"duration": 97.0}, "job_c": {"duration": 3.75}}, "iqr": {"job_a": {"duration": 0.0}, "lammps": {"duration": 5.0}, "job_c": {"duration": 0.0}}, "max": {"job_a": {"duration": 3.0}, "lammps": {"duration": 100.0}, "job_c": {"duration": 4.0}}, "min": {"job_a": {"duration": 3.0}, "lammps": {"duration": 93.0}, "job_c": {"duration": 3.0}}, "mad": {"job_a": {"duration": 0.0}, "lammps": {"duration": 5.0}, "job_c": {"duration": 0.0}}, "count": {"job_a": {"success": 4}, "lammps": {"success": 4}, "job_c": {"success": 4}}}
-Workflow is complete. You can delete the deployment to clean up.
-```
-
 How would we get the output? All of the artifacts are stored in a registry in the cluster. We would install [oras](https://oras.land), and pull from the local registry. When you are done:
 
 ```bash
-kubectl delete -f ./configs/mummi-state-machine.yaml
+kubectl delete -f ./configs/state-machine.yaml
 kubectl delete miniclusters.flux-framework.org --all
 kubectl delete jobs --all
 kubectl delete pods --all
 ```
+
+Importantly, make sure all Pod objects (the registry, the manager, and job steps) are cleaned up before you proceed.
 
 ### MuMMI as a State Machine
 
