@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: efa-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: efa-test-svc
+  namespace: efa-test
+spec:
+  clusterIP: None
+  selector:
+    app: efa-test
+  ports:
+  - port: 5000
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: efa-pingpong-test
+  namespace: efa-test
+spec:
+  completions: 2
+  parallelism: 2
+  completionMode: Indexed
+  template:
+    metadata:
+      labels:
+        app: efa-test
+    spec:
+      restartPolicy: Never
+      subdomain: efa-test-svc
+      nodeSelector:
+        node.kubernetes.io/instance-type: c7g.16xlarge
+      containers:
+      - name: efa-test
+        image: public.ecr.aws/deep-learning-containers/pytorch-training-arm64:2.7.0-gpu-py312-cu128-ubuntu22.04-ec2-v1.37-soci
+        env:
+        - name: FI_PROVIDER
+          value: "efa"
+        - name: FI_EFA_USE_DEVICE_RDMA
+          value: "1"
+        - name: RANK
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          # Function to convert signed 32-bit int to unsigned
+          to_unsigned() {
+            local val=$1
+            if [ $val -lt 0 ]; then
+              echo $((val + 4294967296))
+            else
+              echo $val
+            fi
+          }
+          
+          # Function to get EFA counters
+          # Format: "link efa_0/1 tx_bytes 326571056 tx_pkts 318551 rx_bytes 301014012 ..."
+          # Note: Values may be negative due to 32-bit signed int overflow
+          get_efa_stats() {
+            local output=$(rdma statistic show)
+            local tx=$(echo "$output" | grep -oP 'tx_bytes \K-?[0-9]+')
+            local rx=$(echo "$output" | grep -oP 'rx_bytes \K-?[0-9]+')
+            local send=$(echo "$output" | grep -oP 'send_bytes \K-?[0-9]+')
+            local recv=$(echo "$output" | grep -oP 'recv_bytes \K-?[0-9]+')
+            
+            # Convert to unsigned
+            tx=$(to_unsigned $tx)
+            rx=$(to_unsigned $rx)
+            send=$(to_unsigned $send)
+            recv=$(to_unsigned $recv)
+            
+            echo "tx_bytes=$tx rx_bytes=$rx send_bytes=$send recv_bytes=$recv"
+          }
+
+          if [ "$RANK" = "0" ]; then
+            STATS_BEFORE=$(get_efa_stats)
+
+            echo "Checking providers:"
+            /opt/amazon/efa/bin/fi_info --list
+            
+            echo "Starting fi_pingpong server..."
+            /opt/amazon/efa/bin/fi_pingpong -p efa -e rdm -I 10000 -S all
+
+            STATS_AFTER=$(get_efa_stats)
+            
+            # Parse and calculate deltas
+            echo ""
+            echo "=== Data Transfer Summary (Server) ==="
+            printf "%-20s %15s %15s\n" "Counter" "Starting" "⚠ (Change)"
+            printf "%-20s %15s %15s\n" "-------" "--------" "----------"
+            for metric in tx_bytes rx_bytes send_bytes recv_bytes; do
+              before=$(echo "$STATS_BEFORE" | tr ' ' '\n' | grep "^${metric}=" | cut -d= -f2)
+              after=$(echo "$STATS_AFTER" | tr ' ' '\n' | grep "^${metric}=" | cut -d= -f2)
+              if [ -n "$before" ] && [ -n "$after" ] && [ "$before" != "" ] && [ "$after" != "" ]; then
+                # Handle counter wraparound for unsigned 32-bit
+                if [ $after -lt $before ]; then
+                  delta=$((4294967296 + after - before))
+                else
+                  delta=$((after - before))
+                fi
+                printf "%-20s %15s %15s" "$metric" "$after" "+$delta"
+                if [ $delta -gt 0 ]; then
+                  echo "  ✓"
+                else
+                  echo ""
+                fi
+              else
+                printf "%-20s %15s %15s\n" "$metric" "N/A" "N/A"
+              fi
+            done
+          else
+            STATS_BEFORE=$(get_efa_stats)
+            
+            echo "Waiting for server to start..."
+            sleep 10
+            
+            MASTER_ADDR="efa-pingpong-test-0.efa-test-svc.efa-test.svc.cluster.local"
+            echo "Running fi_pingpong client connecting to $MASTER_ADDR..."
+            /opt/amazon/efa/bin/fi_pingpong -p efa -e rdm -I 10000 -S all $MASTER_ADDR
+
+            STATS_AFTER=$(get_efa_stats)
+            
+            # Parse and calculate deltas
+            echo ""
+            echo "=== Data Transfer Summary (Client) ==="
+            printf "%-20s %15s %15s\n" "Counter" "Starting" "⚠ (Change)"
+            printf "%-20s %15s %15s\n" "-------" "--------" "----------"
+            for metric in tx_bytes rx_bytes send_bytes recv_bytes; do
+              before=$(echo "$STATS_BEFORE" | tr ' ' '\n' | grep "^${metric}=" | cut -d= -f2)
+              after=$(echo "$STATS_AFTER" | tr ' ' '\n' | grep "^${metric}=" | cut -d= -f2)
+              if [ -n "$before" ] && [ -n "$after" ] && [ "$before" != "" ] && [ "$after" != "" ]; then
+                # Handle counter wraparound for unsigned 32-bit
+                if [ $after -lt $before ]; then
+                  delta=$((4294967296 + after - before))
+                else
+                  delta=$((after - before))
+                fi
+                printf "%-20s %15s %15s" "$metric" "$after" "+$delta"
+                if [ $delta -gt 0 ]; then
+                  echo "  ✓"
+                else
+                  echo ""
+                fi
+              else
+                printf "%-20s %15s %15s\n" "$metric" "N/A" "N/A"
+              fi
+            done
+          fi
+        resources:
+          limits:
+            vpc.amazonaws.com/efa: 1
+          requests:
+            vpc.amazonaws.com/efa: 1

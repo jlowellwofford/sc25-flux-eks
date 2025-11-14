@@ -32,10 +32,10 @@ This workshop progresses from foundational infrastructure concepts to advanced F
 
 | Module | Topic | Estimated Time | Status |
 |--------|-------|----------------|---------|
-| [Workshop Setup](01-workshop-setup/README.md) | VS Code connection and navigation | 5-10 minutes | ✅ Available |
-| [Module 1](02-module1-hpc-kubernetes/README.md) | HPC on Kubernetes (Amazon EKS) | 30 min - 1 hour | ✅ Available |
-| [Module 2](03-module2-flux-lammps/README.md) | Flux and LAMMPS | TBD | 🚧 Coming Soon |
-| [Module 3](04-module3-mummi-workflows/README.md) | MuMMI Workflows | TBD | 🚧 Coming Soon |
+| [Workshop Setup](00-workshop-setup/README.md) | VS Code connection and navigation | 5-10 minutes | ✅ Available |
+| [Module 1](01-module1-hpc-kubernetes/README.md) | HPC on Kubernetes (Amazon EKS) | 30 min | ✅ Available |
+| [Module 2](02-module2-flux-lammps/README.md) | Flux and LAMMPS | 30 min | ✅ Available |
+| [Module 3](03-module3-mummi-workflows/README.md) | MuMMI Workflows | 30 min | ✅ Available |
 
 ### Module 1 Detailed Contents
 
