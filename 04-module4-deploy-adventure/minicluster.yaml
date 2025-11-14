@@ -1,0 +1,35 @@
+apiVersion: flux-framework.org/v1alpha2
+kind: MiniCluster
+metadata:
+  name: hpcg
+spec:
+  size: 1
+  tasks: 200
+  gpus: 1
+  deadlineSeconds: 10
+  logging:
+    quiet: false
+
+  network:
+    type: efa
+
+  flux:
+    optionFlags: -o gpu-affinity=per-task -o core-affinity=per-task
+    container: 
+      image: ghcr.io/converged-computing/flux-view-ubuntu:jammy
+      disable: true
+      
+  containers:
+   - image: ghcr.io/converged-computing/hpcg-matrix:znver3-ofast-gpu
+     workingDir: /opt/potatoes
+     command: hpcg
+     commands:
+       pre: exit 1
+     environment:
+       FI_PROVIDER: shm
+
+     resources:
+       limits:
+         nvidia.com/gpu: 1
+       requests:
+         nvidia.com/gpu: 1
