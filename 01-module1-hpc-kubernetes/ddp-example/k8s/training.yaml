@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ddp-training
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: training-svc
+  namespace: ddp-training
+spec:
+  clusterIP: None
+  selector:
+    app: pytorch-training
+  ports:
+  - port: 29500
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pytorch-training
+  namespace: ddp-training
+spec:
+  completions: 2
+  parallelism: 2
+  completionMode: Indexed
+  template:
+    metadata:
+      labels:
+        app: pytorch-training
+    spec:
+      restartPolicy: Never
+      subdomain: training-svc
+      nodeSelector:
+        node.kubernetes.io/instance-type: c7g.16xlarge
+      containers:
+      - name: pytorch
+        image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/pytorch-training:latest
+        env:
+        - name: MASTER_ADDR
+          value: "pytorch-training-0.training-svc.ddp-training.svc.cluster.local"
+        - name: MASTER_PORT
+          value: "29500"
+        - name: WORLD_SIZE
+          value: "2"
+        - name: RANK
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+        - name: FI_PROVIDER
+          value: "efa"
+        - name: FI_EFA_USE_DEVICE_RDMA
+          value: "1"
+        - name: GLOO_SOCKET_IFNAME
+          value: "eth0"
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          echo "Starting rank ${RANK}"
+          echo "Checking EFA device..."
+          /opt/amazon/efa/bin/fi_info -p efa || echo "No EFA device found"
+          echo "FI_PROVIDER: ${FI_PROVIDER}"
+          python3 /app/train.py --monitor-efa
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+            vpc.amazonaws.com/efa: "1"
+          limits:
+            vpc.amazonaws.com/efa: "1"

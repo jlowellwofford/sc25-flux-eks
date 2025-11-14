@@ -11,7 +11,7 @@ This guide will help you navigate the workshop materials effectively using VS Co
 ### File Explorer
 - **Location**: Left sidebar (or press `Ctrl+Shift+E`)
 - **Purpose**: Browse and open workshop files
-- **Tip**: The `workshop-assets` folder contains all workshop materials
+- **Tip**: The `Environment` folder contains all workshop materials, and `eksctl` contains the cluster configuration for the running EKS cluster in your account 
 
 ### Editor Area
 - **Location**: Center of the screen
@@ -49,20 +49,20 @@ This guide will help you navigate the workshop materials effectively using VS Co
 ## Workshop File Structure
 
 ```
-workshop-assets/
+environment/
 ├── README.md                          # Main workshop entry point
-├── 01-workshop-setup/                 # Getting started materials
+├── eksctl/                            # Running EKS Cluster configuration
+│   └── config.yaml                    
+├── 00-workshop-setup/                 # Getting started materials
 │   ├── README.md
-│   ├── 01-vscode-connection.md       # This guide's prerequisite
-│   └── 02-navigation-guide.md        # This file
-├── 02-module1-hpc-kubernetes/         # Main workshop content
+│   ├── 01-vscode-connection.md        # This guide's prerequisite
+│   └── 02-navigation-guide.md         # This file
+├── 01-module1-hpc-kubernetes/         # Main workshop content
 │   ├── README.md                      # Module overview
-│   ├── 01-install-clis.md
-│   ├── 02-create-eks-cluster.md
-│   └── ... (additional sections)
-├── 03-module2-flux-lammps/           # Future content
-├── 04-module3-mummi-workflows/       # Future content
-└── images/                           # Workshop images
+│   └── module1.md
+├── 02-module2-flux-lammps/            # Future content
+├── 03-module3-mummi-workflows/        # Future content
+└── images/                            # Workshop images
 ```
 
 ## Essential VS Code Shortcuts
