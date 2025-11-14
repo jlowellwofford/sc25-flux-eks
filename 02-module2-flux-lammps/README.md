@@ -4,7 +4,7 @@
 
 ## Overview
 
-This module will cover running LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) using Flux for advanced job scheduling and resource management.
+This module will cover running [LAMMPS](https://www.lammps.org) (Large-scale Atomic/Molecular Massively Parallel Simulator) using Flux for advanced job scheduling and resource management.
 
 ## Contents
 
@@ -21,7 +21,7 @@ This module will cover running LAMMPS (Large-scale Atomic/Molecular Massively Pa
 
 ## Estimated Time
 
-- TBA
+- 45 minutes
 
 ## Tutorial
 
