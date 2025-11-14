@@ -26,7 +26,7 @@ This module focuses on deploying MuMMI (Multiscale Machine-learned Modeling Infr
 
 ## Estimated Time
 
-TBD
+45 minutes
 
 ## Tutorial
 
@@ -3146,12 +3146,9 @@ GROMACS reminds you: "The three principal virtues of a programmer are Laziness, 
 ```
 Note that the ns/day improves by approximately 1.43x.
 
-
 ### An example state machine
 
-### MuMMI as a State Machine
-
-Let's install the state machine operator. This is going to orchestrate components as steps in a state machine, with transitions guided by jobs completing. First, install the operator.
+Let's install the state machine operator. The operator will orchestrate components as steps in a state machine, with transitions guided by job completions. First, install the operator.
 
 ```bash
 kubectl apply -f ./configs/state-machine-operator-arm.yaml
@@ -3165,7 +3162,9 @@ echo "Manager pod is $manager"
 kubectl logs -n state-machine-operator-system ${manager}
 ```
 
-Next, create a state machine. MuMMI steps are going to take a long time, so let's start with a simple example that will finish quickly. We will ask for two completions, so you will see two jobs run in parallel. If we launched more jobs, they would be submit as space opened up after workflow completions.
+Next, create a state machine based on a toy workflow. MuMMI steps generate scientific data and can take a while to run, so let's start with a quick, simple example. The example uses LAMMPS as the HPC application in the workflow, and runs a small REAXFF problem. 
+
+We will ask for two completions, so you will see two jobs run in parallel. If we launched more jobs, they would be submit as space opened up after workflow completions.
 
 ```bash
 kubectl apply -f ./configs/state-machine.yaml
@@ -3217,7 +3216,7 @@ registry-0                              1/1     Running     0          114s
 state-machine-manager-d95d6b564-5bhpl   1/1     Running     0          114s
 ```
 
-You can watch lammps jobs appear, each of which generates 2 pods (a Flux Operator minicluster) and then the final step (job-c) to constitute one completion. If we ran MuMMI, the jobs could go up to 12 hours on HPC, and for small experiments, about 2.5 hours. When everything completes:
+You can watch LAMMPS jobs appear, each of which generates 2 pods (a Flux Operator minicluster) and then the final step (job-c) to constitute one completion. If we ran MuMMI, the jobs could go up to 12 hours on HPC, and for small experiments, about 2.5 hours. When everything completes:
 
 ```bash
 $ kubectl get pods
@@ -3261,7 +3260,9 @@ kubectl delete jobs --all
 kubectl delete pods --all
 ```
 
-Finally, while we may not have time to complete it, here is how to run the MuMMI state machine. It is the same conceptually,  but we have MuMMI components that run longer and generate meaningful output.
+### MuMMI as a State Machine
+
+Finally, we will run the MuMMI state machine. It is the same conceptually as the simple example above, but we have MuMMI components (e.g., `createsims` and `cganalysis` which use GROMACS) that run longer and generate scientifically meaningful output.
 
 ```bash
 kubectl apply -f configs/mummi-state-machine.yaml
