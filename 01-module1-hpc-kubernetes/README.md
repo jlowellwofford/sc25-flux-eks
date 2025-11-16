@@ -519,7 +519,7 @@ kubectl describe pod -n ddp-training $POD_NAME | grep -A 10 Events
 
 - Click here to go to: [SideQuest #1: Build a Container Image (Optional)](SideQuest1_BuildContainerImage.md)
 
-- Click Here to go to: [SideQuest #2: EFA Bandwidth Test with fi_pingpong (Optional)](SideQuest1_EFAPingPong.md)
+- Click Here to go to: [SideQuest #2: EFA Bandwidth Test with fi_pingpong (Optional)](SideQuest2_EFAPingPong.md)
 
 - Click Here to go to: [SideQuest #3: Set Up Shared Storage (Optional)](SideQuest3_StoragePVC.md)
 
