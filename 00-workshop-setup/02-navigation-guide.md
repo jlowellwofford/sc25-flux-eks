@@ -150,5 +150,5 @@ Now that you understand how to navigate the workshop materials, you're ready to 
 ---
 **Navigation:**
 - Previous: [VS Code Connection Guide](01-vscode-connection.md)
-- Next: [Module 1: HPC on Kubernetes](../02-module1-hpc-kubernetes/README.md)
+- Next: [Module 1: HPC on Kubernetes](../01-module1-hpc-kubernetes/README.md)
 - Up: [Workshop Setup](README.md)

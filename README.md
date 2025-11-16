@@ -30,31 +30,21 @@ This workshop progresses from foundational infrastructure concepts to advanced F
 
 ### Workshop Modules
 
-| Module | Topic | Estimated Time | Status |
-|--------|-------|----------------|---------|
-| [Workshop Setup](00-workshop-setup/README.md) | VS Code connection and navigation | 5-10 minutes | ✅ Available |
-| [Module 1](01-module1-hpc-kubernetes/README.md) | HPC on Kubernetes (Amazon EKS) | 30 min | ✅ Available |
-| [Module 2](02-module2-flux-lammps/README.md) | Flux and LAMMPS | 30 min | ✅ Available |
-| [Module 3](03-module3-mummi-workflows/README.md) | MuMMI Workflows | 30 min | ✅ Available |
+| Time | Topic | Content |
+|------|-------|---------|
+| 1:30 PM - 1:35 PM | Welcome & Introduction | Slides and [Workshop Setup](00-workshop-setup/README.md) |
+| 1:35 PM - 2:00 PM | Introduction to Amazon EKS | Slides and [Module 1](01-module1-hpc-kubernetes/README.md) |
+| 2:00 PM - 3:00 PM | Introduction to Flux Framework | Slides and [Module 2](02-module2-flux-lammps/README.md) |
+| 3:00 PM - 3:30 PM | Break | |
+| 3:30 PM - 4:45 PM | Workflows with Flux on EKS (MuMMI Workflows) | Slides and [Module 3](03-module3-mummi-workflows/README.md) |
+| 4:45 PM - 5:00 PM | Closing and Q&A | | 
 
-### Module 1 Detailed Contents
 
-- Install Tools (eksctl, kubectl, helm)
-- Create and validate EKS cluster
-- Create persistent volume with FSx for Lustre
-- Setup monitoring
-- Deploy MPI Operator
-- Run GROMACS MPI job
-- Cleanup and optional scale-out
-
-## 🏗️ Architecture Overview
-
-![Flux+EKS Architecture](images/aws-eks/eks-hpc-architecture.png)
+## 🏗️ Workshop Overview
 
 The workshop demonstrates how to orchestrate complex workflows using:
 - **Amazon EKS**: Managed Kubernetes service
 - **Flux**: Advanced job scheduling and resource management
-- **FSx for Lustre**: High-performance parallel file system
 - **GROMACS**: Molecular dynamics simulation software
 - **MuMMI**: Multiscale machine learning infrastructure
 
@@ -70,7 +60,7 @@ By the end of this workshop, you will:
 
 ## 📋 Prerequisites
 
-- Basic familiarity with containers and Kubernetes concepts
+- Basic familiarity with containers and Kubernetes concepts (Don't worry! Module 1 will also bootstrap your knowledge)
 - Understanding of command-line interfaces
 - AWS account access (provided during the workshop)
 - No prior experience with Flux or HPC required
@@ -84,7 +74,7 @@ Ready to begin? Start with the [Workshop Setup](01-workshop-setup/README.md) to 
 If you encounter issues during the workshop:
 
 1. Check the troubleshooting sections in each module
-2. Ask questions in the workshop chat or raise your hand
+2. Ask questions in the workshop chat or raise your hand (remember to ask questions on mic for livestream)
 3. Consult the workshop instructors
 
 ## 📄 Additional Resources
@@ -96,4 +86,4 @@ If you encounter issues during the workshop:
 
 ---
 
-**Ready to start?** → [Begin with Workshop Setup](01-workshop-setup/README.md)
+**Ready to start?** → [Begin with Workshop Setup](00-workshop-setup/README.md)

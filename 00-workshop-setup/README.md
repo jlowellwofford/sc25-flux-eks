@@ -6,6 +6,11 @@
 
 This section covers the initial setup required to participate in the workshop, including connecting to your VS Code development environment and understanding how to navigate the workshop materials.
 
+If you are viewing this file comfortably in your web browser IDE, click 
+- Next Module: [Module 1: HPC on Kubernetes](../01-module1-hpc-kubernetes/README.md)
+
+Otherwise, review the content below for an orientation. 
+
 ## Contents
 
 1. [VS Code Connection Guide](01-vscode-connection.md)
