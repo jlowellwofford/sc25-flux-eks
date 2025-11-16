@@ -3031,7 +3031,7 @@ Createsims runs for approximately 10 minutes, however it depends on the simulati
 
 ### MuMMI with MPI
 
-How can the Flux Operator (and Flux, generally) improve running a MuMMI component? We can run gromacs (the underlying unit of cganalysis and createsims) on two nodes to improve performance. Let's test that next. First, let's run gromacs on one node.
+How can the Flux Operator (and Flux, generally) improve running a MuMMI component? We can run gromacs (the underlying unit of cganalysis and createsims) on two nodes to improve performance. Let's test that next. First, let's run GROMACS on one node.
 
 ```bash
 kubectl apply -f configs/05-gromacs-mpi-1-node-minicluster.yaml
@@ -3152,6 +3152,12 @@ GROMACS reminds you: "The three principal virtues of a programmer are Laziness, 
 ```
 Note that the ns/day improves by approximately 1.43x.
 
+As before, delete the minicluster.
+
+```bash
+kubectl apply -f configs/05-gromacs-mpi-2-node-minicluster.yaml
+```
+
 ### An example state machine
 
 Let's install the state machine operator. The operator will orchestrate components as steps in a state machine, with transitions guided by job completions. First, install the operator.
@@ -3179,7 +3185,7 @@ kubectl apply -f ./configs/state-machine.yaml
 The state machine manager will be creating, and a local [OCI Registry as Storage](https://oras.land) (ORAS) registry created to easily share assets between steps.
 
 ```bash
- kubectl get pods
+kubectl get pods
 NAME                                     READY   STATUS              RESTARTS   AGE
 registry-0                               1/1     Running             0          5s
 state-machine-manager-765fb94769-bdlls   0/1     ContainerCreating   0          5s
@@ -3188,7 +3194,7 @@ state-machine-manager-765fb94769-bdlls   0/1     ContainerCreating   0          
 You can look at the logs of the manager to see the state machines starting! 
 
 ```bash
-kubectl logs mummi-manager-7c74786dfc-gm5vb -f
+kubectl logs state-machine-manager-7c74786dfc-gm5vb -f
 ```
 ```bash
 kubectl logs state-machine-manager-d95d6b564-78jpz 
