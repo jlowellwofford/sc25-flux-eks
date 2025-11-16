@@ -69,8 +69,8 @@ spec:
         vpc.amazonaws.com/efa: 1
 EOF
 
-# Wait for pod to be ready
-kubectl wait --for=condition=Ready pod/efa-test -n ddp-training --timeout=300s
+# Wait for pod to be ready, this can take 5-6 minutes
+kubectl wait --for=condition=Ready pod/efa-test -n ddp-training --timeout=360s
 
 # Check EFA device is mapped into container
 kubectl exec -it efa-test -n ddp-training -- ls -l /dev/infiniband/

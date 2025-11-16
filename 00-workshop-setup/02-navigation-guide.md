@@ -33,7 +33,7 @@ This guide will help you navigate the workshop materials effectively using VS Co
 3. Use preview mode for better readability (see below)
 
 ### Markdown Preview Mode
-**Essential for this workshop!** Preview mode renders markdown with proper formatting, images, and clickable links.
+**Essential for this workshop!** Preview mode renders markdown with proper formatting, images, and clickable links. ***Your vscode server has been pre-configured to open `.md` files in Preview by default.***
 
 **Ways to open preview:**
 - `Ctrl+Shift+V` - Open preview in current tab
@@ -50,21 +50,19 @@ This guide will help you navigate the workshop materials effectively using VS Co
 
 ```
 environment/
-├── README.md                          # Main workshop entry point
+├── sc25-flux-eks/ 
+|   ├── README.md                          # Main workshop entry point
+|   ├── 00-workshop-setup/                 # Getting started materials
+│   |   ├── README.md
+│   |   ├── 01-vscode-connection.md        # This guide's prerequisite
+│   |   └── 02-navigation-guide.md         # This file
+|   ├── 01-module1-hpc-kubernetes/         # Module 1 content
+|   ├── 02-module2-flux-lammps/            # Module 2 content
+|   ├── 03-module3-mummi-workflows/        # Module 3 content
+|   ├── 04-module4-deploy-adventure/       # (optional) Module 4 content
+|   └── images/                            # Workshop images
 ├── eksctl/                            # Running EKS Cluster configuration
-│   └── config.yaml                    
-├── 00-workshop-setup/                 # Getting started materials
-│   ├── README.md
-│   ├── 01-vscode-connection.md        # This guide's prerequisite
-│   └── 02-navigation-guide.md         # This file
-├── 01-module1-hpc-kubernetes/         # Main workshop content
-│   ├── README.md                      # Module overview
-│   └── README.md
-├── 02-module2-flux-lammps/            
-│   └── README.md
-├── 03-module3-mummi-workflows/        
-│   └── README.md
-└── images/                            # Workshop images
+│   └── config.yaml 
 ```
 
 ## Essential VS Code Shortcuts
@@ -136,7 +134,7 @@ environment/
 ### Can't Find Files
 - Use `Ctrl+P` and start typing the filename
 - Check the file explorer for the correct folder structure
-- Ensure you're in the `workshop-assets` directory
+- Ensure you're in the `sc25-flux-eks` directory
 
 ### Terminal Issues
 - Press `Ctrl+`` to toggle terminal visibility

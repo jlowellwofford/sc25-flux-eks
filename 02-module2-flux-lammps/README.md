@@ -36,6 +36,10 @@ kubectl delete namespace efa-test --ignore-not-found=true
 In case you missed the step, we also want to install the cluster autoscaler to allow for scaling to 2 nodes. 
 
 ```bash
+# change to the current module directory
+cd ~/environment/sc25-flux-eks/02-module2-flux-lammps
+
+# apply autoscaler
 kubectl apply -f ./configs/cluster-autoscaler.yaml
 ```
 
@@ -321,6 +325,6 @@ You are done with this module. If you would like to use or modify the LAMMPS con
 
 ---
 **Navigation:**
-- Previous: [Module 1](../01-module1-hpc-kubernetes/README.md)
-- Next: [Module 3](../03-module3-mummi-workflows/README.md)
+- Previous: [Module 1: HPC on Kubernetes](../01-module1-hpc-kubernetes/README.md)
+- Next: [Module 3: MUMMI Workflows](../03-module3-mummi-workflows/README.md)
 - Up: [Workshop Home](../README.md)

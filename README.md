@@ -67,7 +67,7 @@ By the end of this workshop, you will:
 
 ## 🚦 Getting Started
 
-Ready to begin? Start with the [Workshop Setup](01-workshop-setup/README.md) to connect to your development environment and learn how to navigate these materials.
+Ready to begin? Start with the [Workshop Setup](00-workshop-setup/README.md) to connect to your development environment and learn how to navigate these materials.
 
 ## 📞 Support
 
