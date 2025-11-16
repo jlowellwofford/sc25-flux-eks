@@ -530,5 +530,5 @@ kubectl describe pod -n ddp-training $POD_NAME | grep -A 10 Events
 ---
 **Navigation:**
 - Previous: [VS Code Connection Guide](01-vscode-connection.md)
-- Next: [Module 1: HPC on Kubernetes](../01-module1-hpc-kubernetes/README.md)
+- Next: [Module 2: Flux and LAMMPS](../02-module2-flux-lammps/README.md)
 - Up: [Workshop Setup](README.md)
