@@ -59,9 +59,11 @@ environment/
 │   └── 02-navigation-guide.md         # This file
 ├── 01-module1-hpc-kubernetes/         # Main workshop content
 │   ├── README.md                      # Module overview
-│   └── module1.md
-├── 02-module2-flux-lammps/            # Future content
-├── 03-module3-mummi-workflows/        # Future content
+│   └── README.md
+├── 02-module2-flux-lammps/            
+│   └── README.md
+├── 03-module3-mummi-workflows/        
+│   └── README.md
 └── images/                            # Workshop images
 ```
 
@@ -145,7 +147,7 @@ environment/
 
 Now that you understand how to navigate the workshop materials, you're ready to begin the technical content. 
 
-**Next step**: Head to [Module 1: HPC on Kubernetes](../02-module1-hpc-kubernetes/README.md) to start the hands-on workshop.
+**Next step**: Head to [Module 1: HPC on Kubernetes](../01-module1-hpc-kubernetes/README.md) to start the hands-on workshop.
 
 ---
 **Navigation:**
