@@ -1,0 +1,133 @@
+# Kubeflow PyTorchJob equivalent to training.yaml
+# This shows how the same training would look using Kubeflow's Training Operator
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ddp-training
+---
+apiVersion: kubeflow.org/v1
+kind: PyTorchJob
+metadata:
+  name: pytorch-training
+  namespace: ddp-training
+spec:
+  # PyTorchJob automatically handles:
+  # - MASTER_ADDR/MASTER_PORT setup
+  # - RANK/WORLD_SIZE environment variables
+  # - Headless service creation
+  # - Pod naming and discovery
+  
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 1
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            app: pytorch-training
+        spec:
+          nodeSelector:
+            node.kubernetes.io/instance-type: c7g.16xlarge
+          containers:
+          - name: pytorch
+            image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/pytorch-training:latest
+            env:
+            # PyTorchJob automatically sets:
+            # - MASTER_ADDR
+            # - MASTER_PORT (default 23456)
+            # - RANK (0 for master)
+            # - WORLD_SIZE
+            # You only need to set custom env vars
+            - name: FI_PROVIDER
+              value: "efa"
+            - name: FI_EFA_USE_DEVICE_RDMA
+              value: "1"
+            - name: GLOO_SOCKET_IFNAME
+              value: "eth0"
+            command: ["/bin/bash", "-c"]
+            args:
+            - |
+              echo "Starting rank ${RANK} (Master)"
+              echo "MASTER_ADDR: ${MASTER_ADDR}"
+              echo "MASTER_PORT: ${MASTER_PORT}"
+              echo "WORLD_SIZE: ${WORLD_SIZE}"
+              echo "Checking EFA device..."
+              /opt/amazon/efa/bin/fi_info -p efa || echo "No EFA device found"
+              python3 /app/train.py --monitor-efa
+            resources:
+              requests:
+                cpu: "4"
+                memory: "8Gi"
+                vpc.amazonaws.com/efa: "1"
+              limits:
+                vpc.amazonaws.com/efa: "1"
+    
+    Worker:
+      replicas: 1  # Total workers = 2 nodes (1 master + 1 worker)
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            app: pytorch-training
+        spec:
+          nodeSelector:
+            node.kubernetes.io/instance-type: c7g.16xlarge
+          containers:
+          - name: pytorch
+            image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/pytorch-training:latest
+            env:
+            - name: FI_PROVIDER
+              value: "efa"
+            - name: FI_EFA_USE_DEVICE_RDMA
+              value: "1"
+            - name: GLOO_SOCKET_IFNAME
+              value: "eth0"
+            command: ["/bin/bash", "-c"]
+            args:
+            - |
+              echo "Starting rank ${RANK} (Worker)"
+              echo "MASTER_ADDR: ${MASTER_ADDR}"
+              echo "MASTER_PORT: ${MASTER_PORT}"
+              echo "WORLD_SIZE: ${WORLD_SIZE}"
+              echo "Checking EFA device..."
+              /opt/amazon/efa/bin/fi_info -p efa || echo "No EFA device found"
+              python3 /app/train.py --monitor-efa
+            resources:
+              requests:
+                cpu: "4"
+                memory: "8Gi"
+                vpc.amazonaws.com/efa: "1"
+              limits:
+                vpc.amazonaws.com/efa: "1"
+
+---
+# Key Differences Summary:
+#
+# 1. AUTOMATIC SETUP:
+#    - PyTorchJob: Automatically creates headless service, sets env vars
+#    - Kubernetes Job: Manual service creation, manual env var setup
+#
+# 2. REPLICA MANAGEMENT:
+#    - PyTorchJob: Separate Master/Worker specs with clear roles
+#    - Kubernetes Job: Single spec with indexed completions
+#
+# 3. ENVIRONMENT VARIABLES:
+#    - PyTorchJob: MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE auto-injected
+#    - Kubernetes Job: Must manually configure all variables
+#
+# 4. POD NAMING:
+#    - PyTorchJob: pytorch-training-master-0, pytorch-training-worker-0
+#    - Kubernetes Job: pytorch-training-0, pytorch-training-1
+#
+# 5. FAULT TOLERANCE:
+#    - PyTorchJob: Built-in restart policies per replica type
+#    - Kubernetes Job: Basic job-level restart policy
+#
+# 6. MONITORING:
+#    - PyTorchJob: Exposes training metrics via status conditions
+#    - Kubernetes Job: Basic completion/failure status
+#
+# 7. ELASTIC TRAINING:
+#    - PyTorchJob: Supports elastic training with min/max replicas
+#    - Kubernetes Job: Fixed number of completions

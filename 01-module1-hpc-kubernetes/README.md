@@ -4,9 +4,9 @@
 
 ## Overview
 
-This module teaches the basics about running distributed training workloads on Kubernetes [[1]](https://kubernetes.io/docs/) clusters. Content targets End-User personas, less technical than a Systems Administrators. 
+This module teaches the basics about running distributed training workloads on [Kubernetes](https://kubernetes.io/docs/) clusters. Content targets End-User personas, less technical than a Systems Administrators. 
 
-All examples run on AWS Graviton [[2]](https://aws.amazon.com/ec2/graviton/) processors (ARM-based architecture). Amazon EKS [[3]](https://docs.aws.amazon.com/eks/), a managed Kubernetes service, takes on the task of hosting your Kubernetes configuration (i.e., it performs the Administrator-level management tasks for you). 
+All examples run on [AWS Graviton](https://aws.amazon.com/ec2/graviton/) processors (ARM-based architecture). [Amazon EKS](https://docs.aws.amazon.com/eks/), a managed Kubernetes service, takes on the task of hosting your Kubernetes configuration (i.e., it performs the Administrator-level management tasks for you). 
 
 Your task will be to deploy Distributed Data Parallel (DDP) training jobs for ML to an existing EKS cluster. You will work through various exercises to familiarize yourself with Kubernetes, ML training, and debugging. 
 
@@ -26,18 +26,18 @@ Your task will be to deploy Distributed Data Parallel (DDP) training jobs for ML
 
 #### Other differentiators for Cloud: 
 
-**Infrastructure as Code (IaC)** means documenting your infrastructure configuration/setup to be reproducible. Tools like CloudFormation [[4]](https://docs.aws.amazon.com/cloudformation/) or Terraform [[5]](https://www.terraform.io/) let you rebuild/reconfigure an entire HPC environment in minutes. As part of this workshop, an eksctl [[6]](https://eksctl.io/) YAML config is provided in `~/environment/eksctl/config.yaml`. Note that 34 lines of human-readable text represents your complete EKS cluster, including: 
+**Infrastructure as Code (IaC)** means documenting your infrastructure configuration/setup to be reproducible. Tools like [CloudFormation](https://docs.aws.amazon.com/cloudformation/) or [Terraform](https://www.terraform.io/) let you rebuild/reconfigure an entire HPC environment in minutes. As part of this workshop, an [eksctl](https://eksctl.io/) YAML config is provided in `~/environment/eksctl/config.yaml`. Note that 34 lines of human-readable text represents your complete EKS cluster, including: 
  * all networking prerequisites like IP allotments, subnet configuration, network routes, and security groups; 
  * the Kubernetes control plane; 
  * a group of node `workers` to run workloads; 
  * all necessary permissions policies; and 
- * preconfigured network device for Amazon's Elastic Fabric Adapter (EFA) [[7]](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html)--high-performance, low-latency networking. 
+ * preconfigured network device for Amazon's [Elastic Fabric Adapter (EFA)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html)--high-performance, low-latency networking. 
 
-In later sections you will also apply Kubectl [[8]](https://kubernetes.io/docs/reference/kubectl/) YAML config files and Helm Charts [[9](https://helm.sh/)] to reconfigure EKS--these are also IaC. 
+In later sections you will also apply [Kubectl](https://kubernetes.io/docs/reference/kubectl/) YAML config files and [Helm Charts](https://helm.sh/) to reconfigure EKS--these are also IaC. 
 
-**Elastic-scaling** adds more compute hosts when you need and removes them when you don't. This saves money and accelerates time to science. Kubernetes add-ons like Cluster Autoscaler [[10]](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) (used here) or Karpenter [[11]](https://karpenter.sh/) grow/shrink pools of worker nodes on your cluster in response to real workloads. 
+**Elastic-scaling** adds more compute hosts when you need and removes them when you don't. This saves money and accelerates time to science. Kubernetes add-ons like [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) (used here) or [Karpenter](https://karpenter.sh/) grow/shrink pools of worker nodes on your cluster in response to real workloads. 
 
-**Specialized and Managed Services** give you access to powerful tools without managing infrastructure. EKS is one example of a Managed infrastructure. For those who get deeper into machine learning, Amazon SageMaker [[12]](https://docs.aws.amazon.com/sagemaker/) is a fully-managed ML service on AWS to build, train, and deploy models. Amazon Bedrock [[13]](https://docs.aws.amazon.com/bedrock/) is a fully-managed service to build and scale generative AI applications with foundation models. These services handle the complexity and undifferentiated heavy lifting in tasks allowing you to focus on what matters most: your research / business. 
+**Specialized and Managed Services** give you access to powerful tools without managing infrastructure. EKS is one example of a Managed infrastructure. For those who get deeper into machine learning, [Amazon SageMaker](https://docs.aws.amazon.com/sagemaker/) is a fully-managed ML service on AWS to build, train, and deploy models. [Amazon Bedrock](https://docs.aws.amazon.com/bedrock/) is a fully-managed service to build and scale generative AI applications with foundation models. These services handle the complexity and undifferentiated heavy lifting in tasks allowing you to focus on what matters most: your research / business. 
 
 ### Why Use Kubernetes for HPC
 
@@ -47,23 +47,25 @@ Kubernetes handles complex distributed training jobs. In brief, it can:
 - Start all training processes at the same time (gang scheduling)
 - Place workloads on the best machines (node affinity)
 - Manage CPU and GPU resources efficiently
-- Integrate with PyTorch and TensorFlow through projects like Kubeflow [[14]](https://github.com/kubeflow/training-operator)
+- Integrate with PyTorch and TensorFlow through projects like [Kubeflow](https://github.com/kubeflow/training-operator)
 - Provide fault tolerance and automatic checkpointing
 - Integrate most HPC components including high-speed networking, parallel filesystems, schedulers, etc. 
 
-**This module uses `workshop-cluster`, an Amazon EKS cluster with [c7g.16xlarge](https://aws.amazon.com/ec2/instance-types/c7g/) instances (64 cores, 128GB RAM each, Graviton3 ARM64 processor, 30 Gbps EFA) for high-performance CPU-based distributed training.**
+> **Note:** This module uses `workshop-cluster`, an Amazon EKS cluster with [c7g.16xlarge](https://aws.amazon.com/ec2/instance-types/c7g/) instances (64 cores, 128GB RAM each, Graviton3 ARM64 processor, 30 Gbps EFA) for high-performance CPU-based distributed training.
 
 ## Prerequisites
 
 - AWS CLI configured with appropriate permissions
 - kubectl installed
-- eksctl [[4]](https://eksctl.io/) installed
+- eksctl installed
 - Docker installed (for container builds)
 - EKS cluster created using the provided `config.yaml`
 
 ## 1. Connect kubectl to Your Cluster
 
-Let's connect kubectl to your EKS cluster. The AWS CLI will set this up automatically.
+`kubectl` is the primary tool used by both End-users and Administrators to interact with a running Kubernetes cluster. 
+
+Let's configure kubectl to use your EKS cluster. The AWS CLI interacts with the EKS service API to set this up for you.
 
 ```bash
 # Update kubeconfig for the cluster
@@ -85,7 +87,7 @@ You should see your cluster endpoint and at least one c7g.16xlarge node.
 Let's check what's in your cluster before we deploy anything.
 
 ```bash
-# List all namespaces
+# List all namespaces. Namespaces help us logically partition a Kubernetes cluster into virtual sub-spaces. They organize and help prevent naming conflicts 
 kubectl get namespaces
 
 # Get all nodes with detailed information
@@ -100,16 +102,15 @@ kubectl get pods --all-namespaces
 
 ### Check EFA Status
 
-EFA (Elastic Fabric Adapter) provides fast networking between nodes. This is important for distributed training. Let's check if EFA is enabled.
+[EFA (Elastic Fabric Adapter)](https://doi.org/10.1109/HOTI.2019.00023) is Amazon technology providing low-latency, high-bandwidth networking between instances. This is important for scaling distributed training, especially when running on fleets of GPU instances. Let's check if EFA is enabled on worker nodes.
 
 ```bash
 # Check if EFA is enabled on nodes
+# the key "vpc.amazonaws.com/efa" indicates that EFA resource is registered, and the value indicates the number of EFA interfaces in the node. 
 kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{": vpc.amazonaws.com/efa: "}{.status.allocatable.vpc\.amazonaws\.com\/efa}{"\n"}{end}'
 
-# Describe node to see EFA-related information
-kubectl describe node $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
 
-# Check for EFA device plugin (if installed)
+# When you create a node group with efaEnabled: true, EKS deploys the EFA Kubernetes device plugin for you as a DaemonSet (i.e., as nodes come online)
 kubectl get pods -n kube-system | grep efa
 ```
 
@@ -133,13 +134,16 @@ Let's see what resources are available in your cluster.
 # Get cluster resource usage
 kubectl top nodes
 
+# Look at pod resource usage
+kubectl top pods --all-namespaces
+
 # Check available storage classes
 kubectl get storageclass
 ```
 
 ## 3. Install Kubeflow Training Operator
 
-The Kubeflow Training Operator helps you run distributed training jobs. It supports PyTorch [[28]](https://pytorch.org/), TensorFlow [[29]](https://www.tensorflow.org/), and MXNet [[30]](https://mxnet.apache.org/). Let's install it.
+The [Kubeflow Training Operator](https://github.com/kubeflow/training-operator) helps you run distributed training jobs. It supports [PyTorch](https://pytorch.org/), [TensorFlow](https://www.tensorflow.org/), and [MXNet](https://mxnet.apache.org/). Let's install it.
 
 ```bash
 # Create kubeflow namespace
@@ -153,22 +157,7 @@ kubectl get pods -n kubeflow
 kubectl get crd | grep kubeflow
 ```
 
-### Create Application Namespace
-
-Namespaces help organize your workloads. Let's create one for training jobs.
-
-```bash
-# Create namespace for training workloads
-kubectl create namespace ddp-training
-
-# Label namespace for monitoring
-kubectl label namespace ddp-training purpose=distributed-training
-```
-
-## 4. Set Up Automatic Cluster Scaling
-
-### Check Current State
-
+### Check Current Cluster scale
 Let's see what nodes you have before we set up auto-scaling.
 
 ```bash
@@ -181,6 +170,8 @@ eksctl get nodegroup --cluster=workshop-cluster --region=us-east-1
 # View current resource utilization
 kubectl top nodes
 ```
+
+## 4. Set Up Automatic Cluster Scaling
 
 ### Enable Cluster Autoscaler
 
@@ -307,9 +298,17 @@ aws autoscaling describe-auto-scaling-groups \
 kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{": vpc.amazonaws.com/efa: "}{.status.allocatable.vpc\.amazonaws\.com\/efa}{"\n"}{end}'
 ```
 
-## 3. Container Image
+--- 
 
-The simple DDP example provided includes a deploy script that handles building, pushing, and deploying your training job. This is the recommended approach.
+### Time-permitting, go on a Side Quest!
+- Click here to go to: [SideQuest #1: Build a Container Image (Optional)](SideQuest1_BuildContainerImage.md)
+
+---
+
+
+## 5. Run DDP Training Job
+
+The simple DDP example, provided in `~/01-module1-hpc-kubernetes/ddp-example`, includes a deploy script that handles building, pushing, and deploying a training job. 
 
 ```bash
 # Navigate to the DDP example directory
@@ -325,30 +324,21 @@ The deploy script will:
 3. Deploy the Kubernetes Job
 4. Show you monitoring commands
 
-Building and pushing typically takes 3-5 minutes total.
+Building and pushing typically takes 3-5 minutes total. 
 
-### Time-permitting, go on a Side Quest!
-- Click Here to go to: [SideQuest #1: Set Up Shared Storage (Optional)](SideQuest1_BuildContainerImage.md)
-
-## 4. Run DDP Training Job
-
-### Deploy Your Training Job
-
-Our DDP example uses a Kubeflow Job type which automatically stops after training completes. Use the deploy script for the easiest experience:
+Study the deploy.sh and understand the flow of commands. If you want to run it manually, the command is:
 
 ```bash
-# Navigate to the DDP example directory
-cd ~/environment/sc25-flux-eks/01-module1-hpc-kubernetes/ddp-example
+# Deploy
+kubectl apply -f k8s/training.yaml
 
-# Deploy (builds, pushes, and deploys in one command)
-bash scripts/deploy.sh
+# Delete
+kubectl delete -f k8s/training.yaml
 ```
-
-The deploy script handles everything automatically. If you already built the image in section 5, it will rebuild with a new timestamp tag to ensure your latest code changes are included.
 
 ### Verify Deployment
 
-Check that your training pods are starting correctly:
+Check that your training pods are starting correctly. You may see some pods waiting on workers to come online. Remember that pods also require nodes have the EFA daemonset:
 
 ```bash
 # Check pod status
@@ -368,14 +358,16 @@ kubectl logs -n ddp-training -l app=pytorch-training --tail=50
 
 ### Monitor Training Progress
 
-The DDP example uses Kubernetes Jobs with indexed pods. All pods participate in training calculations equally (no master/worker distinction), but there can be distinctions like the rank0 (i.e., master) managing data pulls, checkpoints, and other unique tasks. 
+The DDP example uses Kubernetes Job with indexed pods. All pods participate in training calculations equally (no master/worker distinction), but there can be distinctions in command logic. For example our DDP distinguishes rank 0 in both `docker/train.py` and `k8s/training.yaml` for data pulls, checkpoints, and other unique tasks. 
+
+An alternative to Kubernetes Job type is to use PyTorchJob from the Kubeflow CRD. The Kubeflow PyTorchJob provided in `k8s/pytorchjob-comparison.yaml` calls out some benefits to the CRD approach like distinguished pod roles (Master/Worker) and managed aspects of training for retries/replicas, scaling, etc. Time-permitting, try launching this job type and monitor it. 
 
 To monitor your training job in real-time:
 ```bash
 # [Job level] View logs from all training pods (recommended)
 kubectl logs -n ddp-training -l app=pytorch-training -f
 
-# [Job level] View logs from specific rank (Tip: use move cursor to delete `xxxxx` and your shell Tab-complete the pod name)
+# [Job level] View logs from specific rank (Tip: you can use Tab-complete on kubectl to resolve xxxxx in the pod name)
 kubectl logs -n ddp-training pytorch-training-0-xxxxx -f
 
 # [Cluster level] Watch pod status (run in separate terminal, or Ctrl-C / ^-C to interrupt)
@@ -393,18 +385,14 @@ You should see output showing:
 
 ### Shell into Pods
 
-You might also want to script access for a specific pod for debugging purposes: 
+You might need access to a specific pod for debugging purposes: 
 ```bash
 # A scripted way to get the rank 0 pod name
 POD_NAME=$(kubectl get pods -n ddp-training -l app=pytorch-training -o jsonpath='{.items[?(@.metadata.annotations.batch\.kubernetes\.io/job-completion-index=="0")].metadata.name}')
 echo "Rank 0 pod: $POD_NAME"
 
-# Monitor MNIST training data download
+# Monitor training data download
 kubectl exec -n ddp-training $POD_NAME -- find /data/MNIST
-kubectl exec -n ddp-training $POD_NAME -- du -hs /data/MNIST
-
-# Check EFA devices inside pod
-kubectl exec -it -n ddp-training $POD_NAME -- ls -l /dev/infiniband/
 
 # Check network interfaces
 kubectl exec -it -n ddp-training $POD_NAME -- ip addr show
@@ -412,7 +400,7 @@ kubectl exec -it -n ddp-training $POD_NAME -- ip addr show
 # Check Python environment
 kubectl exec -it -n ddp-training $POD_NAME -- python3 -c "import torch; print(torch.__version__)"
 
-# Finally, exec into the rank0 Pod and take an interactive look around (use the `exit` command to return to IDE shell)
+# Exec into the rank0 Pod and take an interactive look around (use the `exit` command to return to IDE shell)
 kubectl exec -it -n ddp-training $POD_NAME -- /bin/bash
 ```
 
@@ -462,7 +450,7 @@ kubectl get jobs -n ddp-training
 # Clean up completed job and pods
 bash scripts/deploy.sh cleanup
 
-# Or manually delete
+# Or delete the entire namespace and it will nuke whats attached
 kubectl delete namespace ddp-training
 ```
 
@@ -525,14 +513,19 @@ aws ecr list-images --repository-name ddp-training --region us-east-1
 # Check pod events for detailed error
 kubectl describe pod -n ddp-training $POD_NAME | grep -A 10 Events
 ```
+---
 
 ### Time-permitting, go on a Side Quest!
+
+- Click here to go to: [SideQuest #1: Build a Container Image (Optional)](SideQuest1_BuildContainerImage.md)
+
 - Click Here to go to: [SideQuest #2: EFA Bandwidth Test with fi_pingpong (Optional)](SideQuest1_EFAPingPong.md)
 
-### Time-permitting, go on another Side Quest!
 - Click Here to go to: [SideQuest #3: Set Up Shared Storage (Optional)](SideQuest3_StoragePVC.md)
 
-[End of Module 1]
+---
+
+> End of Module 1
 
 ---
 **Navigation:**
