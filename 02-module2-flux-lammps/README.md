@@ -318,12 +318,6 @@ When you are done:
 helm uninstall lammps
 ```
 
-### Advanced Scheduling Scenarios
-
-TBA
-
-- Can we do something with fluxbind (topology) if it's ready? Or do the side quests go here?
-
 You are done with this module. If you would like to use or modify the LAMMPS container, we have provided the Docker build assets in [docker](docker). Use the navigation below to move to the next module.
 
 ---
