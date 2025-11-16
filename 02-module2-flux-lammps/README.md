@@ -27,19 +27,26 @@ This module will cover running [LAMMPS](https://www.lammps.org) (Large-scale Ato
 
 ### Setup
 
-Your eksctl cluster that we used in Module 1 is already created. We need to install the cluster autoscaler to allow for scaling to 2 nodes. 
+We continue to use the EKS cluster, `workshop-cluster` from Module 1. First, let's cleanup any residual namespaces to free occupied workers. 
+
+```bash
+kubectl delete namespace ddp-training --ignore-not-found=true
+kubectl delete namespace efa-test --ignore-not-found=true
+```
+
+In case you missed the step, we also want to install the cluster autoscaler to allow for scaling to 2 nodes. 
 
 ```bash
 kubectl apply -f ./configs/cluster-autoscaler.yaml
 ```
 
-When the cluster is created, install the Flux Operator. Note that this is an ARM build since we are running on an AWS Graviton (ARM) processor.
+When the cluster is created, install the Flux Operator CRD. Note that this is an ARM build since we are running on an AWS Graviton (ARM) processor. This defines the Flux Framework "MiniCluster" resource type.  
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/flux-framework/flux-operator/refs/heads/main/examples/dist/flux-operator-arm.yaml
 ```
 
-It is easier to have auto-completion for kubectl. If you haven't done this yet:
+It is easier to have auto-completion for kubectl. If you need it, run:
 
 ```bash
 source <(kubectl completion bash)
@@ -321,6 +328,6 @@ You are done with this module. If you would like to use or modify the LAMMPS con
 
 ---
 **Navigation:**
-- Previous: [Module 1](../02-module1-hpc-kubernetes/README.md)
-- Next: [Module 3](../04-module3-mummi-workflows/README.md)
+- Previous: [Module 1](../01-module1-hpc-kubernetes/README.md)
+- Next: [Module 3](../03-module3-mummi-workflows/README.md)
 - Up: [Workshop Home](../README.md)

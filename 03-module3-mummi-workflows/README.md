@@ -3265,5 +3265,5 @@ kubectl apply -f configs/mummi-state-machine.yaml
 
 ---
 **Navigation:**
-- Previous: [Module 2](../03-module2-flux-lammps/README.md)
+- Previous: [Module 2](../02-module2-flux-lammps/README.md)
 - Up: [Workshop Home](../README.md)
