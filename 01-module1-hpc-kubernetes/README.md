@@ -31,7 +31,7 @@ Your task will be to deploy Distributed Data Parallel (DDP) training jobs for ML
  * the Kubernetes control plane; 
  * a group of node `workers` to run workloads; 
  * all necessary permissions policies; and 
- * preconfigured network device for Amazon's Elastic Fabric Adapter (EFA) [[7]](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html)--high-performance, low-latency networking. 
+ * preconfigured network device for Amazon's [Elastic Fabric Adapter (EFA)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html)--high-performance, low-latency networking. 
 
 In later sections you will also apply [Kubectl](https://kubernetes.io/docs/reference/kubectl/) YAML config files and [Helm Charts](https://helm.sh/) to reconfigure EKS--these are also IaC. 
 
