@@ -12,7 +12,6 @@ This module will cover running [LAMMPS](https://www.lammps.org) (Large-scale Ato
 - [LAMMPS MiniCluster as a Job](#lammps-minicluster-as-a-job)
 - [Interactive MiniCluster operations](#interactive-minicluster)
 - [Helm-based installations](#helm-install)
-- [Advanced scheduling scenarios](#advanced-scheduling-scenarios)
 
 ## Prerequisites
 
