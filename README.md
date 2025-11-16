@@ -40,24 +40,11 @@ This workshop progresses from foundational infrastructure concepts to advanced F
 | 4:45 PM - 5:00 PM | Closing and Q&A | | 
 
 
-### Module 1 Detailed Contents
-
-- Install Tools (eksctl, kubectl, helm)
-- Create and validate EKS cluster
-- Create persistent volume with FSx for Lustre
-- Setup monitoring
-- Deploy MPI Operator
-- Run GROMACS MPI job
-- Cleanup and optional scale-out
-
-## 🏗️ Architecture Overview
-
-![Flux+EKS Architecture](images/aws-eks/eks-hpc-architecture.png)
+## 🏗️ Workshop Overview
 
 The workshop demonstrates how to orchestrate complex workflows using:
 - **Amazon EKS**: Managed Kubernetes service
 - **Flux**: Advanced job scheduling and resource management
-- **FSx for Lustre**: High-performance parallel file system
 - **GROMACS**: Molecular dynamics simulation software
 - **MuMMI**: Multiscale machine learning infrastructure
 
@@ -73,7 +60,7 @@ By the end of this workshop, you will:
 
 ## 📋 Prerequisites
 
-- Basic familiarity with containers and Kubernetes concepts
+- Basic familiarity with containers and Kubernetes concepts (Don't worry! Module 1 will also bootstrap your knowledge)
 - Understanding of command-line interfaces
 - AWS account access (provided during the workshop)
 - No prior experience with Flux or HPC required
@@ -87,7 +74,7 @@ Ready to begin? Start with the [Workshop Setup](01-workshop-setup/README.md) to 
 If you encounter issues during the workshop:
 
 1. Check the troubleshooting sections in each module
-2. Ask questions in the workshop chat or raise your hand
+2. Ask questions in the workshop chat or raise your hand (remember to ask questions on mic for livestream)
 3. Consult the workshop instructors
 
 ## 📄 Additional Resources
@@ -99,4 +86,4 @@ If you encounter issues during the workshop:
 
 ---
 
-**Ready to start?** → [Begin with Workshop Setup](01-workshop-setup/README.md)
+**Ready to start?** → [Begin with Workshop Setup](00-workshop-setup/README.md)
