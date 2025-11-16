@@ -7,9 +7,7 @@ export AWS_REGION=us-east-1
 # Check for cleanup flag
 if [[ "$1" == "cleanup" || "$1" == "--cleanup" || "$1" == "-c" ]]; then
     echo "Cleaning up resources..."
-    #kubectl delete namespace ddp-training --ignore-not-found=true
     kubectl delete job pytorch-training -n ddp-training --ignore-not-found=true
-    #kubectl delete job pytorch-training -n ddp-training
     kubectl delete service  pytorch-training -n ddp-training --ignore-not-found=true
 
     echo "Cleanup complete!"

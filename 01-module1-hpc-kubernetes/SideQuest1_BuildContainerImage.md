@@ -1,28 +1,6 @@
 ## Side Quest 1: Build Container Image for Training
 
-### Build and Push Your Image Using the Deploy Script
-
-The simplified DDP example includes a deploy script that handles building, pushing, and deploying your training job. This is the recommended approach.
-
-```bash
-# Navigate to the DDP example directory
-cd ~/environment/sc25-flux-eks/01-module1-hpc-kubernetes/ddp-example
-
-# Run the deploy script (builds image, pushes to ECR, and deploys to Kubernetes)
-bash scripts/deploy.sh
-```
-
-The deploy script will:
-1. Build the Docker image with a unique timestamp tag
-2. Push to Amazon ECR (creates repository if needed)
-3. Deploy the Kubernetes Job
-4. Show you monitoring commands
-
-Building and pushing typically takes 3-5 minutes total.
-
-### Manual Build (Alternative)
-
-If you prefer to build manually or need to customize the process:
+If you wnat to build container images manually or need to customize the process:
 
 ```bash
 # Set environment variables
@@ -51,6 +29,18 @@ docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/ddp-training:l
 ### Test EFA in Container (Optional)
 
 You can verify EFA networking works inside containers before running training. We'll test basic EFA device presence and, if available, run bandwidth tests.
+
+### Create Application Namespace
+
+Let's first create a namespace to organize our workspace.
+
+```bash
+# Create namespace for training workloads
+kubectl create namespace ddp-training
+
+# Label namespace for monitoring
+kubectl label namespace ddp-training purpose=distributed-training
+```
 
 #### Basic EFA Device Test
 
