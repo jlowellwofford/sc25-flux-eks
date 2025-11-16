@@ -43,6 +43,10 @@ The final step, cganalysis, can be run with or without MPI.
 Let's create a single MLRunner component. Apply the mlrunner custom resource definition (CRD) to create and run a single step.
 
 ```bash
+# Enter module directory
+cd ~/environment/sc25-flux-eks/03-module3-mummi-workflows
+
+# Create minicluster
 kubectl apply -f ./configs/01-mlrunner-minicluster.yaml
 ```
 
@@ -3271,5 +3275,6 @@ kubectl apply -f configs/mummi-state-machine.yaml
 
 ---
 **Navigation:**
-- Previous: [Module 2](../02-module2-flux-lammps/README.md)
+- Previous: [Module 2: Flux and LAMMPS](../02-module2-flux-lammps/README.md)
+- Next: [ (Optional) Module 4: Deploy Adventure](../04-module4-deploy-adventure/README.md)
 - Up: [Workshop Home](../README.md)
