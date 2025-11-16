@@ -4,9 +4,9 @@
 
 ## Overview
 
-This module teaches the basics about running distributed training workloads on Kubernetes clusters. Content targets End-User personas, less technical than a Systems Administrators. 
+This module teaches the basics about running distributed training workloads on Kubernetes [[1]](https://kubernetes.io/docs/) clusters. Content targets End-User personas, less technical than a Systems Administrators. 
 
-All examples run on AWS Graviton [[1]](https://aws.amazon.com/ec2/graviton/) processors (ARM-based architecture). Amazon EKS [[2]](https://docs.aws.amazon.com/eks/), a managed Kubernetes service, takes on the task of hosting your Kubernetes configuration (i.e., it performs the Administrator-level management tasks for you). 
+All examples run on AWS Graviton [[2]](https://aws.amazon.com/ec2/graviton/) processors (ARM-based architecture). Amazon EKS [[3]](https://docs.aws.amazon.com/eks/), a managed Kubernetes service, takes on the task of hosting your Kubernetes configuration (i.e., it performs the Administrator-level management tasks for you). 
 
 Your task will be to deploy Distributed Data Parallel (DDP) training jobs for ML to an existing EKS cluster. You will work through various exercises to familiarize yourself with Kubernetes, ML training, and debugging. 
 
@@ -26,40 +26,32 @@ Your task will be to deploy Distributed Data Parallel (DDP) training jobs for ML
 
 #### Other differentiators for Cloud: 
 
-**Infrastructure as Code (IaC)** means documenting your infrastructure configuration/setup to be reproducible. Tools like CloudFormation [[3]](https://docs.aws.amazon.com/cloudformation/) or Terraform [[4]](https://www.terraform.io/) let you rebuild/reconfigure an entire HPC environment in minutes. As part of this workshop, an eksctl [[5]](https://eksctl.io/) YAML config is provided in `~/environment/eksctl/config.yaml`. Note that 34 lines of human-readable text represents your complete EKS cluster, including: 
+**Infrastructure as Code (IaC)** means documenting your infrastructure configuration/setup to be reproducible. Tools like CloudFormation [[4]](https://docs.aws.amazon.com/cloudformation/) or Terraform [[5]](https://www.terraform.io/) let you rebuild/reconfigure an entire HPC environment in minutes. As part of this workshop, an eksctl [[6]](https://eksctl.io/) YAML config is provided in `~/environment/eksctl/config.yaml`. Note that 34 lines of human-readable text represents your complete EKS cluster, including: 
  * all networking prerequisites like IP allotments, subnet configuration, network routes, and security groups; 
  * the Kubernetes control plane; 
  * a group of node `workers` to run workloads; 
  * all necessary permissions policies; and 
- * preconfigured network device for Amazon's Elastic Fabric Adapter (EFA) [[6]](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html)--high-performance, low-latency networking. 
+ * preconfigured network device for Amazon's Elastic Fabric Adapter (EFA) [[7]](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html)--high-performance, low-latency networking. 
 
-In later sections you will also apply Kubectl [[7]](https://kubernetes.io/docs/reference/kubectl/) YAML config files and Helm Charts [[8](https://helm.sh/)] to reconfigure EKS--these are also IaC. 
+In later sections you will also apply Kubectl [[8]](https://kubernetes.io/docs/reference/kubectl/) YAML config files and Helm Charts [[9](https://helm.sh/)] to reconfigure EKS--these are also IaC. 
 
-**Elastic-scaling** adds more compute hosts when you need and removes them when you don't. This saves money and accelerates time to science. Kubernetes add-ons like Cluster Autoscaler [[9]](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) (used here) or Karpenter [[10]](https://karpenter.sh/) grow/shrink pools of worker nodes on your cluster in response to real workloads. 
+**Elastic-scaling** adds more compute hosts when you need and removes them when you don't. This saves money and accelerates time to science. Kubernetes add-ons like Cluster Autoscaler [[10]](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) (used here) or Karpenter [[11]](https://karpenter.sh/) grow/shrink pools of worker nodes on your cluster in response to real workloads. 
 
-**Specialized and Managed Services** give you access to powerful tools without managing infrastructure. EKS is one example of a Managed infrastructure. For those who get deeper into machine learning, Amazon SageMaker [[11]](https://docs.aws.amazon.com/sagemaker/) is a fully-managed ML service on AWS to build, train, and deploy models. Amazon Bedrock [[12]](https://docs.aws.amazon.com/bedrock/) is a fully-managed service to build and scale generative AI applications with foundation models. These services handle the complexity and undifferentiated heavy lifting in tasks allowing you to focus on what matters most: your research / business. 
+**Specialized and Managed Services** give you access to powerful tools without managing infrastructure. EKS is one example of a Managed infrastructure. For those who get deeper into machine learning, Amazon SageMaker [[12]](https://docs.aws.amazon.com/sagemaker/) is a fully-managed ML service on AWS to build, train, and deploy models. Amazon Bedrock [[13]](https://docs.aws.amazon.com/bedrock/) is a fully-managed service to build and scale generative AI applications with foundation models. These services handle the complexity and undifferentiated heavy lifting in tasks allowing you to focus on what matters most: your research / business. 
 
 ### Why Use Kubernetes for HPC
 
-Kubernetes [[15]](https://kubernetes.io/docs/) creates a unified platform for HPC and AI/ML workloads. It works the same way whether you're on-premises or in the cloud. This makes your work portable.
+Kubernetes creates a unified platform for HPC and AI/ML workloads. It works the same way whether you're on-premises or in the cloud. This makes your work portable.
 
-Kubernetes handles complex distributed training jobs. It can:
+Kubernetes handles complex distributed training jobs. In brief, it can:
 - Start all training processes at the same time (gang scheduling)
 - Place workloads on the best machines (node affinity)
 - Manage CPU and GPU resources efficiently
-- Integrate with PyTorch and TensorFlow through Kubeflow [[17]](https://github.com/kubeflow/training-operator)
+- Integrate with PyTorch and TensorFlow through projects like Kubeflow [[14]](https://github.com/kubeflow/training-operator)
 - Provide fault tolerance and automatic checkpointing
-- Support high-speed networking like EFA [[5]](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html), InfiniBand [[18]](https://www.infinibandta.org/), and RDMA [[19]](https://www.openfabrics.org/)
+- Integrate most HPC components including high-speed networking, parallel filesystems, schedulers, etc. 
 
-Amazon EKS [[1]](https://docs.aws.amazon.com/eks/) makes Kubernetes easier to use. It manages the control plane across multiple data centers with automatic updates. You get:
-- Access to specialized compute instances (P4d/P5 for GPUs, Graviton [[20]](https://aws.amazon.com/ec2/graviton/) for CPU training)
-- High-performance storage (EFS [[21]](https://docs.aws.amazon.com/efs/), FSx [[22]](https://docs.aws.amazon.com/fsx/))
-- AI services (SageMaker [[11]](https://docs.aws.amazon.com/sagemaker/), Bedrock [[12]](https://docs.aws.amazon.com/bedrock/))
-- Built-in security and compliance
-- Support for Spot instances [[25]](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html) to reduce costs
-- Integration with CloudWatch [[24]](https://docs.aws.amazon.com/cloudwatch/) for monitoring
-
-**This module uses c7g.16xlarge instances** (64 vCPUs, 128GB RAM each) with AWS Graviton4 processors and EFA networking for high-performance CPU-based distributed training.
+**This module uses `workshop-cluster`, an Amazon EKS cluster with [c7g.16xlarge](https://aws.amazon.com/ec2/instance-types/c7g/) instances (64 cores, 128GB RAM each, Graviton3 ARM64 processor, 30 Gbps EFA) for high-performance CPU-based distributed training.**
 
 ## Prerequisites
 
